@@ -1,9 +1,12 @@
-<<<<<<< HEAD
-# detector_celular
-=======
-# Detector Celular
+# Detector Celular con IA
 
-Este es un proyecto web desarrollado con Django y OpenCV para la detección y transmisión de video en tiempo real desde una cámara web. Utiliza PostgreSQL como base de datos para almacenar registros de detecciones. El streaming de video se realiza a través de HTTP (`StreamingHttpResponse` usando `multipart/x-mixed-replace`), lo que permite visualizar el video en el navegador sin utilizar JavaScript o WebSockets.
+Este es un proyecto web desarrollado con Django y OpenCV para la detección y transmisión de video en tiempo real desde una cámara web. Utiliza inteligencia artificial (YOLOv4-tiny) para detectar teléfonos celulares. La interfaz está construida con un diseño premium y moderno, y los registros se almacenan en una base de datos PostgreSQL.
+
+## Capturas de Pantalla
+
+![Interfaz Principal](ruta/a/tu/captura1.png "Marcador de posición para captura de la interfaz")
+![Detección en tiempo real](ruta/a/tu/captura2.png "Marcador de posición para captura de detección de celular")
+![Historial de Detecciones](ruta/a/tu/captura3.png "Marcador de posición para la tabla de últimas detecciones")
 
 ## Requisitos
 
@@ -11,39 +14,16 @@ Este es un proyecto web desarrollado con Django y OpenCV para la detección y tr
 - PostgreSQL
 - Cámara web funcional
 
-## Estructura del Proyecto
-
-```text
-Detector_Celular/
-│
-├── core/                       # Aplicación principal
-│   ├── templates/core/         # Plantillas HTML
-│   │   └── index.html          # Vista principal con el reproductor de video
-│   ├── __init__.py
-│   ├── admin.py                # Registro del modelo Deteccion
-│   ├── apps.py                 # Configuración de la app
-│   ├── camera.py               # Lógica de captura y codificación con OpenCV
-│   ├── models.py               # Definición del modelo Deteccion
-│   ├── urls.py                 # Rutas específicas de la aplicación core
-│   └── views.py                # Controladores, incluyendo el generador de video
-│
-├── detector_celular/           # Configuración del proyecto Django
-│   ├── __init__.py
-│   ├── asgi.py                 # Configuración ASGI (no usado para WebSockets aquí)
-│   ├── settings.py             # Configuración general y de PostgreSQL
-│   ├── urls.py                 # Rutas principales
-│   └── wsgi.py                 # Configuración WSGI
-│
-├── .gitignore                  # Archivos ignorados por Git
-├── manage.py                   # Script de gestión de Django
-├── README.md                   # Documentación del proyecto
-└── requirements.txt            # Dependencias del proyecto
-```
-
-## Configuración de PostgreSQL
+## 1. Configuración de PostgreSQL
 
 Asegúrate de tener un servidor PostgreSQL ejecutándose. Puedes configurar la conexión mediante variables de entorno (o editando los valores por defecto en `detector_celular/settings.py`):
 
+Crea la base de datos en PostgreSQL antes de ejecutar las migraciones:
+```sql
+CREATE DATABASE detector_celular_db;
+```
+
+Variables de entorno configurables:
 - `DB_ENGINE`: Motor de base de datos (por defecto: `django.db.backends.postgresql`)
 - `DB_NAME`: Nombre de la base de datos (por defecto: `detector_celular_db`)
 - `DB_USER`: Usuario de la base de datos (por defecto: `postgres`)
@@ -51,64 +31,50 @@ Asegúrate de tener un servidor PostgreSQL ejecutándose. Puedes configurar la c
 - `DB_HOST`: Host de la base de datos (por defecto: `localhost`)
 - `DB_PORT`: Puerto de la base de datos (por defecto: `5432`)
 
-Crea la base de datos en PostgreSQL antes de ejecutar las migraciones:
-```sql
-CREATE DATABASE detector_celular_db;
-```
+## 2. Descargar el Modelo de Detección (YOLOv4-tiny)
 
-## Instalación y Ejecución
+El sistema utiliza el modelo YOLOv4-tiny pre-entrenado en el dataset COCO. Debes descargar 3 archivos y colocarlos en la carpeta `core/ml_models/` de tu proyecto (crea la carpeta si no existe):
 
-Sigue estos comandos en tu terminal para configurar el proyecto en Windows (PowerShell/CMD):
+1. **Pesos (`yolov4-tiny.weights`):** [Descargar aquí](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.weights)
+2. **Configuración (`yolov4-tiny.cfg`):** [Descargar aquí](https://raw.githubusercontent.com/AlexeyAB/darknet/master/cfg/yolov4-tiny.cfg)
+3. **Nombres de clases (`coco.names`):** [Descargar aquí](https://raw.githubusercontent.com/AlexeyAB/darknet/master/data/coco.names)
 
-1. **Crear el entorno virtual:**
+> Nota: El archivo `coco.names` debe contener la clase "cell phone" (usualmente en la línea 68).
+
+## 3. Instalación y Ejecución
+
+Sigue estos comandos en tu terminal para configurar el proyecto:
+
+1. **Crear y activar el entorno virtual:**
    ```bash
    python -m venv venv
+   # En Windows:
+   .\venv\Scripts\activate
+   # En Linux/Mac:
+   source venv/bin/activate
    ```
 
-2. **Activar el entorno virtual:**
-   - En Windows (PowerShell/CMD):
-     ```bash
-     .\venv\Scripts\activate
-     ```
-
-3. **Instalar dependencias:**
+2. **Instalar dependencias:**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Crear migraciones:**
+3. **Crear y aplicar migraciones a PostgreSQL:**
    ```bash
-   python manage.py makemigrations core
-   ```
-
-5. **Ejecutar migrate:**
-   ```bash
+   python manage.py makemigrations
    python manage.py migrate
    ```
 
-6. **Crear un superusuario:**
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-7. **Ejecutar el servidor:**
+4. **Ejecutar el servidor de desarrollo:**
    ```bash
    python manage.py runserver
    ```
 
-Abre tu navegador y accede a `http://127.0.0.1:8000/`. Podrás ver la transmisión de la cámara web.
-Puedes acceder al panel de administración en `http://127.0.0.1:8000/admin/` para gestionar los registros de Deteccion.
+## 4. Cómo Probar el Sistema
 
-## Función de cada archivo generado
+Para verificar que todo funciona correctamente (Casos de Prueba):
 
-- **requirements.txt**: Define las librerías de Python requeridas (`Django`, `psycopg2-binary`, `opencv-python`).
-- **.gitignore**: Evita que archivos innecesarios como el entorno virtual y la caché se suban al control de versiones.
-- **settings.py**: Archivo principal de configuración de Django, configurado con PostgreSQL.
-- **urls.py (Proyecto)**: Enruta las peticiones de la raíz hacia la aplicación `core`.
-- **models.py**: Define la estructura de la base de datos (`Deteccion`).
-- **admin.py**: Configura qué modelos pueden ser gestionados por los administradores en `/admin/`.
-- **camera.py**: Encapsula la lógica de OpenCV en la clase `VideoCamera` para capturar y codificar frames en JPEG.
-- **views.py**: Contiene las vistas `index` (para renderizar la interfaz) y `video_feed` (para gestionar la respuesta de streaming HTTP continua).
-- **urls.py (App core)**: Mapea las URLs específicas como la raíz y `/video_feed/` hacia sus respectivas vistas.
-- **index.html**: Plantilla base utilizando Bootstrap 5 que incluye la etiqueta `<img>` para recibir el stream de video.
->>>>>>> 87b60be (Proyecto detector celular - Sesion 1 funcionando)
+1. **Prueba de Streaming:** Abre el navegador e ingresa a `http://127.0.0.1:8000/`. Debes ver la interfaz moderna con el título "Detector de Celulares" y el video en vivo de tu cámara. Si ves el badge animado de "Cámara activa", el streaming funciona.
+2. **Prueba de Detección:** Coloca un teléfono celular frente a tu cámara web. Debería aparecer un recuadro verde (bounding box) alrededor del celular con el texto "Celular" y su porcentaje de confianza.
+3. **Prueba de Almacenamiento PostgreSQL:** Mientras sostienes el celular, el sistema guardará un registro (cada 10 segundos para evitar spam). Recarga la página y revisa la sección "Últimas detecciones".
+4. **Prueba de Historial (Tabla):** En la tabla inferior deberás ver reflejada la fecha, la hora exacta y el objeto detectado ("Celular"). Si quitas el celular de la cámara por más de 10 segundos y lo vuelves a poner, verás un nuevo registro aparecer al recargar la página. Si eliminas todas las detecciones de la base de datos (o la instalas desde cero), la tabla mostrará correctamente el estado vacío: "No existen detecciones registradas."
