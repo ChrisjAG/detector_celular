@@ -24,10 +24,19 @@
             font-family: 'Poppins', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-primary);
-            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Primera pantalla que ocupa exactamente el 100% de la ventana */
+        .hero-section {
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            padding-bottom: 1rem;
         }
+
         .text-secondary-custom {
             color: var(--text-secondary);
         }
@@ -39,30 +48,43 @@
             transition: all 0.3s ease;
         }
         .ai-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 180, 216, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 180, 216, 0.2);
             border-color: var(--primary-color);
         }
         .stat-icon {
-            font-size: 2.5rem;
+            font-size: 1.25rem;
             color: var(--primary-color);
-            margin-bottom: 1rem;
+            margin-bottom: 0.25rem;
         }
+        
+        .video-container {
+            flex-grow: 1;
+            min-height: 0; /* Importante para que el video pueda achicarse si la pantalla es pequeña y no desborde */
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            padding-bottom: 0.5rem;
+        }
+        
         .video-wrapper {
             position: relative;
             background-color: #000;
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0, 180, 216, 0.15);
-            transition: all 0.3s ease;
             border: 1px solid var(--border-color);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .video-wrapper:hover {
-            box-shadow: 0 0 30px rgba(0, 180, 216, 0.3);
-        }
+        
         img.stream {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: contain;
             display: block;
         }
         .status-badge {
@@ -77,6 +99,7 @@
             animation: pulse 2s infinite;
             padding: 8px 16px;
             font-weight: 600;
+            font-size: 1rem;
             border-radius: 50px;
         }
         @keyframes pulse {
@@ -86,6 +109,7 @@
         }
         .table-custom {
             color: var(--text-secondary);
+            font-size: 1rem;
         }
         .table-custom thead {
             background-color: var(--border-color);
@@ -101,137 +125,151 @@
             vertical-align: middle;
             background-color: var(--bg-card);
             color: var(--text-secondary);
-            transition: background-color 0.3s ease;
-        }
-        .table-custom tbody tr:hover td {
-            background-color: rgba(0, 180, 216, 0.05);
-            color: var(--text-primary);
-        }
-        .table-custom tbody tr:last-child td {
-            border-bottom: none;
         }
         .badge-custom {
             background-color: var(--primary-color);
             color: #fff;
-            padding: 0.5em 1em;
+            padding: 0.4em 1em;
             border-radius: 50px;
             font-weight: 500;
+            font-size: 0.9rem;
         }
         footer {
             background-color: var(--border-color);
             color: var(--text-secondary);
             padding: 2rem 0;
-            margin-top: auto;
+            margin-top: 3rem;
             text-align: center;
+        }
+        
+        .ai-card.stat-card {
+            padding: 0.75rem !important;
         }
     </style>
 </head>
 <body>
-    <div class="container py-5 flex-grow-1">
-        <!-- Header -->
-        <div class="row mb-5">
-            <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold" style="color: var(--text-primary);">Detector de Celulares</h1>
-                <p class="lead text-secondary-custom">Monitoreo inteligente en tiempo real con Inteligencia Artificial</p>
+    
+    <!-- PRIMERA PANTALLA (Header + Stats + Video) -->
+    <section class="hero-section">
+        <div class="container pt-2 flex-grow-1 d-flex flex-column h-100">
+            <!-- Header -->
+            <div class="row mb-2">
+                <div class="col-12 text-center">
+                    <h1 class="fs-4 fw-bold mb-1" style="color: var(--text-primary);">Detector de Celulares</h1>
+                    <p class="text-secondary-custom mb-0" style="font-size: 0.9rem;">Monitoreo inteligente en tiempo real con Inteligencia Artificial</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Estadísticas -->
-        <div class="row g-4 mb-5 text-center">
-            <!-- Tarjeta 1: Total -->
-            <div class="col-md-4">
-                <div class="ai-card p-4 h-100">
-                    <i class="bi bi-phone stat-icon"></i>
-                    <h5 class="text-secondary-custom">Total de celulares detectados</h5>
-                    <h2 class="fw-bold mb-0" style="color: var(--text-primary);">{{ total_detecciones }}</h2>
+            <!-- Estadísticas -->
+            <div class="row g-2 mb-2 text-center">
+                <!-- Tarjeta 1: Total -->
+                <div class="col-md-4">
+                    <div class="ai-card stat-card h-100 d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-phone stat-icon"></i>
+                        <h6 class="text-secondary-custom mb-1" style="font-size: 0.85rem;">Total detectados</h6>
+                        <h4 class="fw-bold mb-0" style="color: var(--text-primary);">{{ total_detecciones }}</h4>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta 2: Estado -->
+                <div class="col-md-4">
+                    <div class="ai-card stat-card h-100 d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-camera-video stat-icon"></i>
+                        <h6 class="text-secondary-custom mb-1" style="font-size: 0.85rem;">Estado cámara</h6>
+                        <h4 class="fw-bold mb-0 text-success">Activa</h4>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: Última -->
+                <div class="col-md-4">
+                    <div class="ai-card stat-card h-100 d-flex flex-column justify-content-center align-items-center">
+                        <i class="bi bi-clock-history stat-icon"></i>
+                        <h6 class="text-secondary-custom mb-1" style="font-size: 0.85rem;">Última detección</h6>
+                        {% if ultima_deteccion %}
+                            <h5 class="fw-bold mb-0" style="color: var(--text-primary);">
+                                {{ ultima_deteccion.fecha|localtime|date:"d/m/Y" }}<br>
+                                <small class="text-secondary-custom" style="font-size: 0.75rem;">{{ ultima_deteccion.fecha|localtime|date:"H:i:s" }}</small>
+                            </h5>
+                        {% else %}
+                            <h6 class="fw-bold mb-0 text-secondary-custom" style="margin-top: 0.25rem;">No hay detecciones</h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video -->
+            <!-- Este contenedor se expande para llenar el resto de la pantalla -->
+            <div class="row justify-content-center video-container">
+                <div class="col-12 h-100">
+                    <div class="video-wrapper">
+                        <div class="status-badge">
+                            🟢 Cámara activa
+                        </div>
+                        <img class="stream" src="{% url 'core:video_feed' %}" alt="Video en tiempo real">
+                    </div>
                 </div>
             </div>
             
-            <!-- Tarjeta 2: Estado -->
-            <div class="col-md-4">
-                <div class="ai-card p-4 h-100">
-                    <i class="bi bi-camera-video stat-icon"></i>
-                    <h5 class="text-secondary-custom">Estado de la cámara</h5>
-                    <h2 class="fw-bold mb-0 text-success">Activa</h2>
-                </div>
+            <!-- Indicador de scroll visual (flecha hacia abajo) -->
+            <div class="text-center mt-2" style="color: var(--text-secondary); opacity: 0.6;">
+                <i class="bi bi-chevron-down fs-4"></i>
+                <div style="font-size: 0.8rem;">Ver historial</div>
             </div>
+        </div>
+    </section>
 
-            <!-- Tarjeta 3: Última -->
-            <div class="col-md-4">
-                <div class="ai-card p-4 h-100">
-                    <i class="bi bi-clock-history stat-icon"></i>
-                    <h5 class="text-secondary-custom">Última detección</h5>
-                    {% if ultima_deteccion %}
-                        <h4 class="fw-bold mb-0" style="color: var(--text-primary);">
-                            {{ ultima_deteccion.fecha|localtime|date:"d/m/Y" }}<br>
-                            <small class="text-secondary-custom fs-6">{{ ultima_deteccion.fecha|localtime|date:"H:i:s" }}</small>
-                        </h4>
-                    {% else %}
-                        <h4 class="fw-bold mb-0 text-secondary-custom" style="font-size: 1.2rem; margin-top: 0.5rem;">No hay detecciones</h4>
-                    {% endif %}
+    <!-- SEGUNDA PANTALLA (Historial) -->
+    <section class="history-section pt-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="ai-card p-4">
+                        <h3 class="fw-bold mb-4 text-center" style="color: var(--text-primary);">Últimas detecciones</h3>
+                        
+                        {% if detecciones %}
+                        <div class="table-responsive rounded-3">
+                            <table class="table table-custom mb-0 text-center">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Hora</th>
+                                        <th scope="col">Objeto detectado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for det in detecciones %}
+                                    <tr>
+                                        <td>{{ det.fecha|localtime|date:"d/m/Y" }}</td>
+                                        <td>{{ det.fecha|localtime|date:"H:i:s" }}</td>
+                                        <td>
+                                            <span class="badge-custom">
+                                                {{ det.objeto_detectado }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center p-4">
+                            <p class="text-secondary-custom fst-italic mb-0 fs-5">No existen detecciones registradas.</p>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Video -->
-        <div class="row justify-content-center mb-5">
-            <div class="col-lg-10">
-                <div class="video-wrapper">
-                    <div class="status-badge">
-                        🟢 Cámara activa
-                    </div>
-                    <img class="stream" src="{% url 'core:video_feed' %}" alt="Video en tiempo real">
-                </div>
-            </div>
-        </div>
-
-        <!-- Historial -->
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="ai-card p-4">
-                    <h4 class="fw-bold mb-4" style="color: var(--text-primary);">Últimas detecciones</h4>
-                    
-                    {% if detecciones %}
-                    <div class="table-responsive rounded-3 overflow-hidden">
-                        <table class="table table-custom mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Fecha</th>
-                                    <th scope="col">Hora</th>
-                                    <th scope="col">Objeto detectado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for det in detecciones %}
-                                <tr>
-                                    <td>{{ det.fecha|localtime|date:"d/m/Y" }}</td>
-                                    <td>{{ det.fecha|localtime|date:"H:i:s" }}</td>
-                                    <td>
-                                        <span class="badge-custom">
-                                            {{ det.objeto_detectado }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center p-4">
-                        <p class="text-secondary-custom fst-italic mb-0">No existen detecciones registradas.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <h5 class="fw-bold mb-1" style="color: var(--text-primary);">Detector de Celulares</h5>
-            <p class="mb-0">Desarrollado con Django + OpenCV + PostgreSQL</p>
-            <small>&copy; {% now "Y" %}</small>
+        <div class="container d-flex justify-content-center align-items-center gap-3">
+            <h6 class="fw-bold mb-0" style="color: var(--text-primary); font-size: 1rem;">Detector de Celulares</h6>
+            <span class="text-secondary-custom">|</span>
+            <span class="mb-0">Django + OpenCV</span>
+            <span class="text-secondary-custom">|</span>
+            <span>&copy; {% now "Y" %}</span>
         </div>
     </footer>
 </body>
